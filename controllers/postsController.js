@@ -1,13 +1,23 @@
 const connection = require("../data/db");
 
 const index = (req, res) => {
-  const responseData = {
-    result: posts.map(postsResponse),
-    message: "Lista dei post",
-    success: true,
-  };
+  const sql = "SELECT * FROM posts";
 
-  res.json(responseData);
+  connection.query(sql, (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        message: "Database query failed",
+        status: false,
+      });
+    }
+
+    const responseData = {
+      result: results.map(postsResponse),
+      message: "Lista dei post",
+      success: true,
+    };
+    res.json(responseData);
+  });
 };
 
 const show = (req, res) => {
@@ -146,7 +156,9 @@ const destroy = (req, res) => {
 };
 
 const postsResponse = (post) => {
-  const imagePath = "http://localhost:3000" + post.image;
+  const isImage = post.image;
+  const imageName = isImage.replace("avif", "jpeg");
+  const imagePath = "http://localhost:3000/imgs/posts/" + imageName;
   return { ...post, image: imagePath };
 };
 
