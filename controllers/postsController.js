@@ -22,14 +22,30 @@ const index = (req, res) => {
 
 const show = (req, res) => {
   const postID = parseInt(req.params.id);
+  const sql = "SELECT * FROM posts WHERE id = ?";
 
-  const responseData = {
-    result: post,
-    message: `Dettagli post ${postID}`,
-    success: true,
-  };
+  connection.query(sql, [postID], (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        message: "Database query failed",
+        status: false,
+      });
+    }
 
-  res.json(responseData);
+    if (result.length == 0) {
+      return res.status(404).json({
+        message: "Post not found.",
+        status: false,
+      });
+    }
+
+    const responseData = {
+      result: result.map(postsResponse),
+      message: `Dettagli post ${postID}`,
+      success: true,
+    };
+    res.json(responseData);
+  });
 };
 
 /* const store = (req, res) => {
@@ -131,28 +147,25 @@ const modify = (req, res) => {
 
 const destroy = (req, res) => {
   const postID = parseInt(req.params.id);
-  const postFind = postsData.find((post) => post.id === postID);
+  const sql = "DELETE FROM posts WHERE id = ?";
 
-  if (!postFind) {
-    const responseData = {
-      message: `Post ${postID} non trovato!`,
-      success: false,
-    };
-    return res.status(404).json(responseData);
-  } else {
-    // FILTER
-    const post = postsData.filter((post) => post.id !== postID);
+  connection.query(sql, [postID], (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        message: "Database query failed",
+        status: false,
+      });
+    }
 
-    const responseData = {
-      result: "Nessun Contenuto",
-      message: `Post ${postID} eliminato!`,
-      success: true,
-    };
+    if (result.length == 0) {
+      return res.status(404).json({
+        message: "Post not found.",
+        status: false,
+      });
+    }
 
-    console.log(postsData);
-
-    res.status(204).json(responseData);
-  }
+    res.sendStatus(204);
+  });
 };
 
 const postsResponse = (post) => {
